@@ -4,13 +4,12 @@ on:
   push:
     branches:
       - main  # Specify the branch that triggers the workflow
-  workflow_dispatch:
+  workflow_dispatch:  # Enable manual triggering of the workflow
     inputs:
       GSI:
         description: 'Samfw Link For AP'
         required: true
         default: 'AP LINK FROM SAMFW'
-      
       Firmware:
         description: 'Firmware version'
         required: true
