@@ -1,4 +1,4 @@
-# Convert erofs to ext4 rw samsung non gki
+# Convert erofs to ext4 rw samsung gki
 
  </br>Check your device model number and build number </br>
 <br>Copy link of AP file accroding to build number and country </br>
