@@ -1,59 +1,79 @@
 name: Samsung EROFS to EXT4
+
 on:
-  push:
-    branches:
-      - main  # Change this to your desired branch
-  workflow_dispatch:
-    inputs:
-      GSI:
-        description: 'Samfw Link For AP'
-        required: true
-        default: ' AP LINK FROM SAMFW'
-      
-      Firmware:
-        description: 'Firmware version'
-        required: true
-        default: 'EG - :A055FXXU2AWK1'
+  push:
+    branches:
+      - main  # Specify the branch that triggers the workflow
+  workflow_dispatch:
+    inputs:
+      GSI:
+        description: 'Samfw Link For AP'
+        required: true
+        default: 'AP LINK FROM SAMFW'
+      
+      Firmware:
+        description: 'Firmware version'
+        required: true
+        default: 'EG - :A055FXXU2AWK1'
 
 jobs:
-  Build:
-    runs-on: ubuntu-latest
+  Build:
+    runs-on: ubuntu-latest
 
-    steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
 
-    - name: Install Dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y cpio bc simg2img lz4 git device-tree-compiler lz4 xz-utils zlib1g-dev openjdk-17-jdk gcc g++ python3 python-is-python3 p7zip-full android-sdk-libsparse-utils erofs-utils
-        sudo apt install -y zip xz-utils unzip p7zip-full wget
-        
-    - name: Preparing Files
-      run: |
-        # Downloading and extracting necessary files
-        wget https://github.com/TNDRP/erofs_ext4/releases/download/erofs-ext4-gki/erofs-ext-gki.zip
-        unzip erofs-ext-gki.zip
-        rm -r erofs-ext-gki.zip
+    - name: Install Dependencies
+      run: |
+        # Update the package list and install required dependencies
+        sudo apt update
+        sudo apt install -y cpio bc simg2img lz4 git device-tree-compiler xz-utils zlib1g-dev openjdk-17-jdk gcc g++ python3 python-is-python3 p7zip-full android-sdk-libsparse-utils erofs-utils
+        sudo apt install -y zip unzip wget
 
-    - name: Downloading given firmware
-      run: |
-        # Downloading Stock rom
-        wget -O ap.zip ${{ github.event.inputs.GSI }} 
-        chmod +x *
-        chmod 755 bin/*
-        chmod 755 aik/bin/*
-        
-    - name: Converting
-      run: |
-        # Building the ROM
-        ./down
+    - name: Preparing Files
+      run: |
+        # Download and extract necessary files
+        wget https://github.com/TNDRP/erofs_ext4/releases/download/erofs-ext4-gki/erofs-ext-gki.zip
+        unzip erofs-ext-gki.zip
+        rm -rf erofs-ext-gki.zip
 
-    - name: Rename file
-      run: mv ./last/EXT4_RW_AP.zip ./last/${{ github.event.inputs.Firmware }}.zip
+    - name: Downloading given firmware
+      run: |
+        # Log the firmware download URL for debugging
+        echo "Downloading firmware from: ${{ github.event.inputs.GSI }}"
+        
+        # Download firmware using wget with verbose output for debugging
+        wget -v -O ap.zip "${{ github.event.inputs.GSI }}"
+        
+        # Check if the download was successful
+        if [ $? -ne 0 ]; then
+          echo "Error downloading the firmware from ${{ github.event.inputs.GSI }}"
+          exit 1
+        fi
 
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: EXT4_RW_AP
-        path: ./last/${{ github.event.inputs.Firmware }}.zip
+        # Set execute permissions on necessary files
+        chmod +x *
+        chmod 755 bin/*
+        chmod 755 aik/bin/*
+
+    - name: Converting
+      run: |
+        # Check if the 'down' script exists before executing
+        if [ -f ./down ]; then
+          ./down
+        else
+          echo "Error: 'down' script not found!"
+          exit 1
+        fi
+
+    - name: Rename file
+      run: |
+        # Rename the output file with the firmware version
+        mv ./last/EXT4_RW_AP.zip ./last/"${{ github.event.inputs.Firmware }}".zip
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: EXT4_RW_AP
+        path: ./last/"${{ github.event.inputs.Firmware }}".zip
