@@ -32,9 +32,9 @@ jobs:
     - name: Preparing Files
       run: |
         # Downloading and extracting necessary files
-        wget https://sourceforge.net/projects/samsung-galaxy-a01-m01/files/erofs_ext4.zip
-        unzip erofs_ext4.zip
-        rm -r erofs_ext4.zip
+        wget https://github.com/TNDRP/erofs_ext4/releases/download/erofs-ext4-gki/erofs-ext-gki.zip
+        unzip erofs-ext-gki.zip
+        rm -r erofs-ext-gki.zip
 
     - name: Downloading given firmware
       run: |
